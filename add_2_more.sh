@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-vpc_id='xxx'
+vpc_id=$(aws ec2 describe-vpcs --query \
+  'Vpcs[?IsDefault==`true`].VpcId' --output 'text')
 
 for i in 3 4 ; do
   group_name="test-group-$i"
