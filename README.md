@@ -82,6 +82,88 @@ And created security groups can be seen using:
 +------------------+-----------------------------------+
 ```
 
+### Manually create 2 more groups
+
+Using this script I add 2 more security groups:
+
+```bash
+#!/usr/bin/env bash
+
+vpc_id='xxx'
+
+for i in 3 4 ; do
+  group_name="test-group-$i"
+  aws ec2 create-security-group \
+    --description "Test group $i" \
+    --group-name "$group_name" \
+    --vpc-id "$vpc_id"
+  aws ec2 authorize-security-group-ingress \
+    --group-name "$group_name" \
+    --protocol 'tcp' \
+    --port '22' \
+    --cidr '0.0.0.0/0'
+done
+```
+
+Run that:
+
+```text
+▶ bash -x add_2_more.sh
++ vpc_id=xxx
++ for i in 3 4
++ group_name=test-group-3
++ aws ec2 create-security-group --description 'Test group 3' --group-name test-group-3 --vpc-id vpc-07a59518ae4faa320
+{
+    "GroupId": "sg-04bd75b5f12baeeaa"
+}
++ aws ec2 authorize-security-group-ingress --group-name test-group-3 --protocol tcp --port 22 --cidr 0.0.0.0/0
++ for i in 3 4
++ group_name=test-group-4
++ aws ec2 create-security-group --description 'Test group 4' --group-name test-group-4 --vpc-id vpc-07a59518ae4faa320
+{
+    "GroupId": "sg-0c53f0aa2c3144e72"
+}
++ aws ec2 authorize-security-group-ingress --group-name test-group-4 --protocol tcp --port 22 --cidr 0.0.0.0/0
+```
+
+### Manually update the template
+
+Modify the template to add 2 more groups:
+
+```diff
+diff --git a/cloudformation.yml b/cloudformation.yml
+index 9625bd4..0e6d285 100644
+--- a/cloudformation.yml
++++ b/cloudformation.yml
+@@ -12,6 +12,16 @@ Resources:
+     DeletionPolicy: Retain
+     Properties:
+       GroupDescription: EC2 Instance access
++  SGroup3:
++    Type: 'AWS::EC2::SecurityGroup'
++    DeletionPolicy: Retain
++    Properties:
++      GroupDescription: EC2 Instance access
++  SGroup4:
++    Type: 'AWS::EC2::SecurityGroup'
++    DeletionPolicy: Retain
++    Properties:
++      GroupDescription: EC2 Instance access
+   SGroup1Ingress:
+     Type: 'AWS::EC2::SecurityGroupIngress'
+     DeletionPolicy: Retain
+```
+
+### From the AWS Console
+
+1. CloudFormation > Stacks > test-stack
+1. Stack actions > Import resources into stack
+1. Upload the above template when asked.
+
+Note that confusingly, I had to use the GroupName when it asks for the GroupId. See also [this](https://drumcoder.co.uk/blog/2018/jul/24/security-group-not-found-vpc/) blog post.
+
+After that the stack went to IMPORT_IN_PROGRESS and then IMPORT_COMPLETE.
+
 ## See also
 
 - AWS docs, [Import Existing Resources Into a Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-import-existing-stack.html).
