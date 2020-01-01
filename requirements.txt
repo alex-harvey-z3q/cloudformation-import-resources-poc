@@ -1,0 +1,3 @@
+awscli
+cfn_flip
+swagger-spec-validator
