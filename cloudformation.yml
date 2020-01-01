@@ -1,32 +1,30 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: AWS CloudFormation DeletionPolicy demo
+Description: AWS CloudFormation Import Resources demo
 Resources:
   SGroup1:
-    Type: 'AWS::EC2::SecurityGroup'
-    DeletionPolicy: Retain
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: EC2 Instance access
   SGroup2:
-    Type: 'AWS::EC2::SecurityGroup'
-    DeletionPolicy: Retain
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: EC2 Instance access
   SGroup1Ingress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
+    Type: AWS::EC2::SecurityGroupIngress
     DeletionPolicy: Retain
     Properties:
       GroupName: !Ref SGroup1
       IpProtocol: tcp
-      ToPort: '80'
-      FromPort: '80'
+      ToPort: 80
+      FromPort: 80
       CidrIp: 0.0.0.0/0
   SGroup2Ingress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
+    Type: AWS::EC2::SecurityGroupIngress
     DeletionPolicy: Retain
     Properties:
       GroupName: !Ref SGroup2
       IpProtocol: tcp
-      ToPort: '80'
-      FromPort: '80'
+      ToPort: 80
+      FromPort: 80
       CidrIp: 0.0.0.0/0
