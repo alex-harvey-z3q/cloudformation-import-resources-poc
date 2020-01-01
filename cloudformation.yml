@@ -12,6 +12,16 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       GroupDescription: EC2 Instance access
+  SGroup3:
+    Type: 'AWS::EC2::SecurityGroup'
+    DeletionPolicy: Retain
+    Properties:
+      GroupDescription: EC2 Instance access
+  SGroup4:
+    Type: 'AWS::EC2::SecurityGroup'
+    DeletionPolicy: Retain
+    Properties:
+      GroupDescription: EC2 Instance access
   SGroup1Ingress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     DeletionPolicy: Retain
