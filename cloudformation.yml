@@ -12,7 +12,6 @@ Resources:
       GroupDescription: EC2 Instance access
   SGroup1Ingress:
     Type: AWS::EC2::SecurityGroupIngress
-    DeletionPolicy: Retain
     Properties:
       GroupName: !Ref SGroup1
       IpProtocol: tcp
@@ -21,7 +20,6 @@ Resources:
       CidrIp: 0.0.0.0/0
   SGroup2Ingress:
     Type: AWS::EC2::SecurityGroupIngress
-    DeletionPolicy: Retain
     Properties:
       GroupName: !Ref SGroup2
       IpProtocol: tcp
