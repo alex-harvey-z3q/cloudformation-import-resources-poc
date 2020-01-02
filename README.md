@@ -80,12 +80,13 @@ And created security groups can be seen using:
 
 ### Manually create 2 more groups
 
-Now I want to create 2 more groups that will lie outside of CloudFormation's management. Using this script I add 2 more security groups:
+Now I want to create 2 more groups that will lie outside of CloudFormation's management. Using [this](./add_2_more.sh) script I add 2 more security groups:
 
 ```bash
 #!/usr/bin/env bash
 
-vpc_id='xxx'
+vpc_id=$(aws ec2 describe-vpcs --query \
+  'Vpcs[?IsDefault==`true`].VpcId' --output 'text')
 
 for i in 3 4 ; do
   group_name="test-group-$i"
@@ -105,19 +106,20 @@ I run that:
 
 ```text
 ▶ bash -x add_2_more.sh
+++ aws ec2 describe-vpcs --query 'Vpcs[?IsDefault==`true`].VpcId' --output text
 + vpc_id=xxx
 + for i in 3 4
 + group_name=test-group-3
 + aws ec2 create-security-group --description 'Test group 3' --group-name test-group-3 --vpc-id xxx
 {
-    "GroupId": "sg-04bd75b5f12baeeaa"
+    "GroupId": "sg-030fb0a0675af168a"
 }
 + aws ec2 authorize-security-group-ingress --group-name test-group-3 --protocol tcp --port 22 --cidr 0.0.0.0/0
 + for i in 3 4
 + group_name=test-group-4
 + aws ec2 create-security-group --description 'Test group 4' --group-name test-group-4 --vpc-id xxx
 {
-    "GroupId": "sg-0c53f0aa2c3144e72"
+    "GroupId": "sg-0a830ad5218a37afd"
 }
 + aws ec2 authorize-security-group-ingress --group-name test-group-4 --protocol tcp --port 22 --cidr 0.0.0.0/0
 ```
@@ -128,26 +130,26 @@ Modify the template to add 2 more groups. Note that I add the attribute `Deletio
 
 ```diff
 diff --git a/cloudformation.yml b/cloudformation.yml
-index 9625bd4..0e6d285 100644
+index 4b7ad0d..78e22b7 100644
 --- a/cloudformation.yml
 +++ b/cloudformation.yml
-@@ -12,6 +12,16 @@ Resources:
-     DeletionPolicy: Retain
+@@ -10,6 +10,16 @@ Resources:
+     Type: AWS::EC2::SecurityGroup
      Properties:
        GroupDescription: EC2 Instance access
 +  SGroup3:
-+    Type: 'AWS::EC2::SecurityGroup'
++    Type: AWS::EC2::SecurityGroup
 +    DeletionPolicy: Retain
 +    Properties:
 +      GroupDescription: EC2 Instance access
 +  SGroup4:
-+    Type: 'AWS::EC2::SecurityGroup'
++    Type: AWS::EC2::SecurityGroup
 +    DeletionPolicy: Retain
 +    Properties:
 +      GroupDescription: EC2 Instance access
    SGroup1Ingress:
-     Type: 'AWS::EC2::SecurityGroupIngress'
-     DeletionPolicy: Retain
+     Type: AWS::EC2::SecurityGroupIngress
+     Properties:
 ```
 
 ### From the AWS Console
@@ -211,7 +213,15 @@ I wanted to see what the new template looks like so:
         CidrIp: 0.0.0.0/0
 ```
 
-Clearly, the same as the one I uploaded. So this hasn't helped me with code generation at all.
+## Discussion
+
+The problem Amazon is trying to solve appears to be that in the old days, a resource that existed outside a CloudFormation stack could not be moved within CloudFormation's management without deleting and recreating the stack. Their docs [state](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-import.html):
+
+> If you created an AWS resource outside of AWS CloudFormation management, you can bring this existing resource into AWS CloudFormation management using resource import. You can manage your resources using AWS CloudFormation regardless of where they were created without having to delete and re-create them as part of a stack.
+
+This is a different use-case from CloudFormer, which can code-generate CloudFormation templates from pre-existing AWS resources.
+
+I had hoped that CloudFormation Import Resources could allow both, but for the moment, it doesn't help to actually generate code that could be saved in Git and revision controlled.
 
 ## See also
 
